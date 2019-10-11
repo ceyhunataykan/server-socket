@@ -1,3 +1,3 @@
 Veri İletişimi Dersi - Server Socket Uygulaması
 
-![Sunum](https://im2.ezgif.com/tmp/ezgif-2-b98ee921ba04.png)
+![](https://github.com/ceyhunataykan/veri-iletisimi/blob/master/Server%20Socket%20G%C3%B6rsel.gif)
