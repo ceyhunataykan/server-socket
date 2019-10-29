@@ -1,36 +1,50 @@
-package serversocketuygulamasi;
+import java.io.BufferedOutputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.Socket;
 
-import java.io.*;
-import java.net.*;
+public class FileClient {
 
-public class Kullanici {
-     public static void main(String[] args) throws UnknownHostException, IOException{
-        Socket socket = null;
-          PrintWriter out = null;
-          BufferedReader in = null;
-          String deger;
-          try {
-               socket = new Socket("192.168.86.129", 3002);
-          } catch (Exception e) {
-               System.out.println("Port Hatası!");
-          }
-          out = new PrintWriter(socket.getOutputStream(), true);
+  public final static int SOCKET_PORT = 13267;
+  public final static String SERVER = "192.168.86.130";
+  public final static String FILE_TO_RECEIVED = "C:\\Users\\ceyhunataykan\\Documents\\serversocket\\gelen.txt";
 
-          in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
- 
-          System.out.println("Sunucu'ya gönderilecek bir sayı giriniz :");
+  public final static int FILE_SIZE = 6022386;
 
-          BufferedReader data = new BufferedReader(new InputStreamReader(System.in));
- 
-          while((deger = data.readLine()) != null) {
-               out.println(deger);
-               System.out.println("Sunucu'dan dönen sonuç = " + in.readLine());
-               System.out.println("Sunucu'ya gönderilecek sayı giriniz :");
-          }
-          
-          out.close();
-          in.close();
-          data.close();
-          socket.close();
+  public static void main (String [] args ) throws IOException {
+    int bytesRead;
+    int current = 0;
+    FileOutputStream fos = null;
+    BufferedOutputStream bos = null;
+    Socket sock = null;
+    try {
+      sock = new Socket(SERVER, SOCKET_PORT);
+      System.out.println("Baglaniliyor...");
+
+      // receive file
+      byte [] mybytearray  = new byte [FILE_SIZE];
+      InputStream is = sock.getInputStream();
+      fos = new FileOutputStream(FILE_TO_RECEIVED);
+      bos = new BufferedOutputStream(fos);
+      bytesRead = is.read(mybytearray,0,mybytearray.length);
+      current = bytesRead;
+
+      do {
+         bytesRead =
+            is.read(mybytearray, current, (mybytearray.length-current));
+         if(bytesRead >= 0) current += bytesRead;
+      } while(bytesRead > -1);
+
+      bos.write(mybytearray, 0 , current);
+      bos.flush();
+      System.out.println("Dosya " + FILE_TO_RECEIVED
+          + " indirildi (" + current + " bytes)");
     }
+    finally {
+      if (fos != null) fos.close();
+      if (bos != null) bos.close();
+      if (sock != null) sock.close();
+    }
+  }
 }
