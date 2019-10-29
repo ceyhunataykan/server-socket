@@ -1,38 +1,49 @@
-import java.io.*;
-import java.net.*;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.ServerSocket;
+import java.net.Socket;
 
-public class Sunucu {
+public class FileServer {
 
-	public static void main(String[] args) throws IOException{
-		
-		String kullaniciGelen;
-        ServerSocket sunucuSocket = null;
-        Socket kullaniciSocket = null;
+  public final static int SOCKET_PORT = 13267; 
+  public final static String FILE_TO_SEND = "/home/ceyhun/Documents/giden.txt";
 
-        int sayi;
-
+  public static void main (String [] args ) throws IOException {
+    FileInputStream fis = null;
+    BufferedInputStream bis = null;
+    OutputStream os = null;
+    ServerSocket servsock = null;
+    Socket sock = null;
+    try {
+      servsock = new ServerSocket(SOCKET_PORT);
+      while (true) {
+        System.out.println("Istek Bekleniyor...");
         try {
-             sunucuSocket = new ServerSocket(3002);
-        } catch (Exception e) {
-             System.out.println("Port Hatası!");
+          sock = servsock.accept();
+          System.out.println("Baglanti kuruldu : " + sock);
+          File myFile = new File (FILE_TO_SEND);
+          byte [] mybytearray  = new byte [(int)myFile.length()];
+          fis = new FileInputStream(myFile);
+          bis = new BufferedInputStream(fis);
+          bis.read(mybytearray,0,mybytearray.length);
+          os = sock.getOutputStream();
+          System.out.println("Gonderiliyor " + FILE_TO_SEND + "(" + mybytearray.length + " bytes)");
+          os.write(mybytearray,0,mybytearray.length);
+          os.flush();
+          System.out.println("Basarili.");
         }
-        System.out.println("Sunucu Başladı...");
-
-        kullaniciSocket = sunucuSocket.accept();
-
-        PrintWriter out = new PrintWriter(kullaniciSocket.getOutputStream(), true);
-
-        BufferedReader in = new BufferedReader(new InputStreamReader(kullaniciSocket.getInputStream()));
-
-        while((kullaniciGelen = in.readLine()) != null) {
-             System.out.println("Kullanıcı'dan gelen veri = " + kullaniciGelen);
-             sayi = Integer.valueOf(kullaniciGelen);
-             out.println(sayi*sayi);
+        finally {
+          if (bis != null) bis.close();
+          if (os != null) os.close();
+          if (sock!=null) sock.close();
         }
-        out.close();
-        in.close();
-        kullaniciSocket.close();
-        sunucuSocket.close();
-
-	}
+      }
+    }
+    finally {
+      if (servsock != null) servsock.close();
+    }
+  }
 }
